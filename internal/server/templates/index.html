@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Read the Room</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<style>
+:root{color-scheme:light dark}
+body{margin:0 auto;max-width:42rem;padding:1rem;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1{font-size:1.5rem;margin:.2rem 0 1rem}
+h2{font-size:1.15rem;margin-top:2rem}
+form.read{display:flex;gap:.5rem;flex-wrap:wrap}
+form.read input[type=url]{flex:1 1 20rem;padding:.6rem;font-size:1rem}
+form.read button{padding:.6rem 1rem;font-size:1rem}
+.hint{color:#888;font-size:.9rem;overflow-wrap:anywhere}
+.err{color:#c00}
+.notice{color:#0a0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:.35rem .5rem;border-bottom:1px solid #8884}
+@media (prefers-color-scheme:dark){body{background:#111;color:#eee}a{color:#9cf}.hint{color:#aaa}}
+</style>
+</head>
+<body>
+<main>
+<h1>Read the Room</h1>
+{{if .Error}}<p class="err">{{.Error}}</p>{{end}}
+{{if .Notice}}<p class="notice">{{.Notice}}</p>{{end}}
+<form class="read" action="/read" method="get">
+  <input type="url" name="url" inputmode="url" placeholder="https://…" autofocus required>
+  <button type="submit">Read</button>
+  <div>
+    <label><input type="radio" name="view" value="reader" checked> Reader</label>
+    <label><input type="radio" name="view" value="original"> Original</label>
+  </div>
+</form>
+<p class="hint">
+  Bookmarklet: <a href="{{.Bookmarklet}}">Bypass this page</a> —
+  bookmark any page, then edit its URL to this.
+  You can also use <code>{{.Origin}}/https://…</code>.
+</p>
+
+<h2>Rules</h2>
+<table>
+  <thead><tr><th>Source</th><th>Sites</th><th>Updated</th></tr></thead>
+  <tbody>
+  {{range .Sources}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td>{{.Sites}}</td>
+      <td>{{.Updated}}{{if .LastError}}<br><span class="err">{{.LastError}}</span>{{end}}</td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>
+<form method="post" action="/update"><button type="submit">Update rules now</button></form>
+</main>
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>

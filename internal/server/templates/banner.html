@@ -1,0 +1,5 @@
+<div style="position:sticky;top:0;z-index:2147483647;font:14px system-ui;background:Canvas;color:CanvasText;border-bottom:1px solid #8888;padding:6px 10px">
+<a href="{{.Home}}">home</a> · via {{.Strategy}}{{if not .Complete}} · may be incomplete{{end}} · rule: {{.Rule}} · <a href="{{.Toggle}}">{{.ToggleName}}</a> · <a href="{{.Source}}">Source</a>
+<div>Try: {{range $i, $t := .Tries}}{{if $i}} · {{end}}<a href="{{$t.URL}}">{{$t.Name}}</a>{{end}}</div>
+<details><summary>attempts</summary><ul style="margin:.3rem 0">{{range .Attempts}}<li>{{.Strategy}}: {{.Status}}</li>{{end}}</ul></details>
+</div>

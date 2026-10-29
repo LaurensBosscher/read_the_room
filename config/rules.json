@@ -1,0 +1,46 @@
+{
+  "profiles": {
+    "browser": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"},
+    "googlebot": {"User-Agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", "Referer": "https://www.google.com/", "X-Forwarded-For": "66.249.66.1"},
+    "bingbot": {"User-Agent": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"},
+    "facebookbot": {"User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"},
+    "twitterbot": {"User-Agent": "Twitterbot/1.0"}
+  },
+  "referers": {"google": "https://www.google.com/", "facebook": "https://www.facebook.com/", "twitter": "https://t.co/"},
+  "archive_today_mirrors": ["archive.ph", "archive.today", "archive.is", "archive.li"],
+  "freedium_mirrors": ["freedium-mirror.cfd", "freedium.cfd"],
+  "challenge_markers": [
+    "just a moment...", "checking your browser", "cf-challenge", "cf_chl_", "ddos protection",
+    "attention required! | cloudflare", "enable javascript and cookies to continue",
+    "please verify you are a human", "_incapsula_resource", "incapsula incident",
+    "captcha-delivery.com", "enable js and disable any ad blocker"
+  ],
+  "updates": {
+    "interval": "24h",
+    "sources": [
+      {"name": "bpc", "type": "bpc_zip", "url": "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass-paywalls-chrome-clean-master.zip"},
+      {"name": "bpc-updates", "type": "bpc_json", "url": "https://gitflic.ru/project/magnolia1234/bpc_updates/blob/raw?file=sites_updated.json"},
+      {"name": "antipaywall", "type": "ubo", "url": "https://raw.githubusercontent.com/liamengland1/miscfilters/master/antipaywall.txt"}
+    ]
+  },
+  "defaults": {
+    "strategies": ["googlebot", "browser", "bingbot", "facebookbot", "archive_org", "archive_today"],
+    "referer": "google",
+    "random_ip": false,
+    "keep_scripts": false,
+    "block_regex": "(tinypass\\.com|piano\\.io|poool\\.fr|zephr\\.com|evolok\\.(com|net)|pelcro\\.com|wallkit\\.net|qiota\\.com|mediapass\\.com|onecount\\.net|mppglobal\\.com|mppapi\\.io|lightboxcdn\\.com|sophi\\.io|news\\.google\\.com/swg/|/amp-access-|leaky-paywall|tncms/api/access)",
+    "unhide_selectors": [".subscriber-only"],
+    "ld_json": true,
+    "paywall_markers": [
+      "subscribe to continue", "subscribe to read", "to continue reading", "this article is for subscribers",
+      "create a free account to continue", "sign in to continue reading", "you have reached your limit",
+      "become a member to read", "lees verder met", "dit artikel is exclusief voor abonnees",
+      "log in om verder te lezen"
+    ],
+    "min_text_length": 1000
+  },
+  "sites": [
+    {"name": "Medium", "domains": ["medium.com"], "strategies": ["freedium", "archive_today", "archive_org"]},
+    {"name": "The New York Times", "domains": ["nytimes.com"], "strategies": ["archive_today", "archive_org", "googlebot"]}
+  ]
+}

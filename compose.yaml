@@ -1,0 +1,10 @@
+services:
+  readtheroom:
+    build: .
+    container_name: readtheroom
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
