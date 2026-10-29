@@ -2,7 +2,9 @@ package fetch
 
 import (
 	"context"
+	"crypto/tls"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -177,5 +179,73 @@ func TestGooglebotProfileHeaders(t *testing.T) {
 	}
 	if headers.language != acceptLanguage {
 		t.Errorf("Accept-Language = %q, want %q", headers.language, acceptLanguage)
+	}
+}
+
+func TestArchiveTodaySnapshotURL(t *testing.T) {
+	valid := []string{
+		"https://archive.ph/20261028205244/https://www.economist.com/leaders/x",
+		"https://archive.today/AbCdE",
+		"https://archive.is/20260101000000/https://example.com/",
+	}
+	for _, raw := range valid {
+		if !isArchiveTodaySnapshot(raw) {
+			t.Errorf("isArchiveTodaySnapshot(%q) = false, want true", raw)
+		}
+	}
+	invalid := []string{
+		"https://archive.ph/newest/https://example.com/",
+		"https://archive.ph/newest",
+		"https://archive.ph/",
+		"https://example.com/AbCdE",
+	}
+	for _, raw := range invalid {
+		if isArchiveTodaySnapshot(raw) {
+			t.Errorf("isArchiveTodaySnapshot(%q) = true, want false", raw)
+		}
+	}
+}
+
+func TestArchiveTodayFollowsSnapshotRedirect(t *testing.T) {
+	const mirror = "archive.ph"
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/newest/"):
+			http.Redirect(w, r, "https://"+mirror+"/20261028205244/"+
+				strings.TrimPrefix(r.URL.Path, "/newest/"), http.StatusFound)
+		case strings.HasPrefix(r.URL.Path, "/20261028205244/"):
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			io.WriteString(w, "<html><body><article><p>"+
+				strings.Repeat("snapshot text ", 50)+"</p></article></body></html>")
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	set := &rules.Set{File: &rules.File{
+		Profiles:            map[string]map[string]string{"browser": {"User-Agent": "fetch-test"}},
+		ArchiveTodayMirrors: []string{mirror},
+	}}
+	f := New(true)
+	f.Timeout = 5 * time.Second
+	f.transport.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, srv.Listener.Addr().String())
+	}
+	f.transport.TLSClientConfig = &tls.Config{ServerName: mirror, InsecureSkipVerify: true}
+
+	target, err := url.Parse("https://example.com/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := f.Fetch(context.Background(), set, rules.Rule{}, rules.StrategyArchiveToday, target)
+	if err != nil {
+		t.Fatalf("Fetch: %v", err)
+	}
+	if !strings.Contains(resp.HTML, "snapshot text") {
+		t.Errorf("HTML does not contain the snapshot body")
+	}
+	if !strings.Contains(resp.FinalURL.String(), "/20261028205244/") {
+		t.Errorf("FinalURL = %s, want a snapshot path", resp.FinalURL)
 	}
 }

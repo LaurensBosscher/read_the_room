@@ -39,8 +39,10 @@ var (
 	cgnatPrefix = netip.MustParsePrefix("100.64.0.0/10")
 
 	waybackRE = regexp.MustCompile(`^https?://web\.archive\.org/web/(\d+)/`)
-	// archive.today snapshot pages look like https://archive.ph/AbCdE.
-	archiveTodayRE = regexp.MustCompile(`^https?://archive\.[a-z]+/[A-Za-z0-9]{4,}$`)
+	// archive.today snapshots are /<14-digit timestamp>/<original url>, and
+	// short IDs are /<id>. The trailing slash is required so /newest/<url> is
+	// rejected explicitly below.
+	archiveTodayRE = regexp.MustCompile(`^https?://archive\.[a-z]+/([A-Za-z0-9]{4,})(?:/|$)`)
 )
 
 // Fetcher retrieves pages through header profiles and archive mirrors.
@@ -353,7 +355,7 @@ func (f *Fetcher) archiveToday(ctx context.Context, set *rules.Set, rule rules.R
 			errs++
 			continue
 		}
-		if !archiveTodayRE.MatchString(resp.FinalURL.String()) {
+		if !isArchiveTodaySnapshot(resp.FinalURL.String()) {
 			continue
 		}
 		head := resp.HTML
@@ -370,6 +372,11 @@ func (f *Fetcher) archiveToday(ctx context.Context, set *rules.Set, rule rules.R
 		return nil, lastErr
 	}
 	return nil, errors.New("no archive.today snapshot")
+}
+
+func isArchiveTodaySnapshot(raw string) bool {
+	m := archiveTodayRE.FindStringSubmatch(raw)
+	return m != nil && m[1] != "newest"
 }
 
 func (f *Fetcher) freedium(ctx context.Context, set *rules.Set, rule rules.Rule, target *url.URL, markers []string) (*Response, error) {
